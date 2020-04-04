@@ -1,0 +1,26 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Laba7_8.LangDir"
+                    xmlns:v="clr-namespace:System;assembly=mscorlib">
+    <TextBlock x:Key="UserCursor" Cursor="LangDir/cursor.cur"/>
+    <v:String x:Key="NewTask">New task</v:String>
+    <v:String x:Key="DeleteTask">Delete</v:String>
+    <v:String x:Key="EditWindow">Edit Widnow</v:String>
+    <v:String x:Key="TodoList">Todo List</v:String>
+    <v:String x:Key="SaveEdit">Save edit</v:String>
+    <v:String x:Key="EditTask">Edit</v:String>
+    <v:String x:Key="AddTask">Add task</v:String>
+    <v:String x:Key="LowPriority">Low</v:String>
+    <v:String x:Key="MedPriority">Medium</v:String>
+    <v:String x:Key="HighPriority">High</v:String>
+    <v:String x:Key="DoneStatus">Done</v:String>
+    <v:String x:Key="NotDoneStatus">Not done</v:String>
+    <v:String x:Key="MenuLanguage">Language</v:String>
+    <v:String x:Key="DataGrid">Table</v:String>
+    <v:String x:Key="CreationDate">Creation Date</v:String>
+    <v:String x:Key="Status">Status</v:String>
+    <v:String x:Key="Priority">Priority</v:String>
+    <v:String x:Key="Name">Name</v:String>
+    <v:String x:Key="Description">Description</v:String>
+
+</ResourceDictionary>
