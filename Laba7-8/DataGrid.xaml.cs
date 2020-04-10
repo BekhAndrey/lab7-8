@@ -18,6 +18,8 @@ using System.Threading;
 using Laba7_8.Models;
 using Laba7_8.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace Laba7_8
 {
@@ -26,12 +28,14 @@ namespace Laba7_8
     /// </summary>
     public partial class DataGrid : Window
     {
+        public bool IsSorted;
         private readonly string Path = $"{Environment.CurrentDirectory}\\TodoDataList.json";
-        private BindingList<TodoModel> TodoModelList;
+        private ObservableCollection<TodoModel> TodoModelList;
         private JsonSerializer jsonSerializer;
         public DataGrid()
         {
             InitializeComponent();
+            IsSorted = false;
             jsonSerializer = new JsonSerializer(Path);
             try
             {
@@ -44,18 +48,54 @@ namespace Laba7_8
                 MessageBox.Show(ex.Message);
                 Close();
             }
-            this.DataContext = TodoModelList;
-            TodoModelList.ListChanged += TodoModelList_ListChanged;
-
-        }
-        private void ListWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-
+            ListView.ItemsSource = TodoModelList;
+            TodoModelList.CollectionChanged += TodoModelList_ListChanged;
         }
 
-        private void TodoModelList_ListChanged(object sender, ListChangedEventArgs e)
+        private bool PriorityFilter(object item)
         {
-            if (e.ListChangedType == ListChangedType.ItemAdded || e.ListChangedType == ListChangedType.ItemDeleted || e.ListChangedType == ListChangedType.ItemChanged)
+            if (String.IsNullOrEmpty(Prioritytxt.Text))
+                return true;
+            else
+                return ((item as TodoModel).Priority.IndexOf(Prioritytxt.Text, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+        private bool NameFilter(object item)
+        {
+            if (String.IsNullOrEmpty(Nametxt.Text))
+                return true;
+            else
+                return ((item as TodoModel).Name.IndexOf(Nametxt.Text, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+        private bool DescFilter(object item)
+        {
+            if (String.IsNullOrEmpty(Descriptiontxt.Text))
+                return true;
+            else
+                return ((item as TodoModel).Description.IndexOf(Descriptiontxt.Text, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private void PriorityFilter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            view.Filter = PriorityFilter;
+            CollectionViewSource.GetDefaultView(ListView.ItemsSource).Refresh();
+        }
+        private void NameFilter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            view.Filter = NameFilter;
+            CollectionViewSource.GetDefaultView(ListView.ItemsSource).Refresh();
+        }
+        private void DescFilter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            view.Filter = DescFilter;
+            CollectionViewSource.GetDefaultView(ListView.ItemsSource).Refresh();
+        }
+
+        private void TodoModelList_ListChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace)
             {
                 try
                 {
@@ -68,10 +108,9 @@ namespace Laba7_8
                 }
             }
         }
-
-        private void Add_Click(object sender, RoutedEventArgs e)
+        private void NewCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (!Name.Text.Trim().Equals(string.Empty) && !Description.Text.Trim().Equals(string.Empty)&&!Status.Text.Trim().Equals(string.Empty)&& !Priority.Text.Trim().Equals(string.Empty))
+            if (!Name.Text.Trim().Equals(string.Empty) && !Description.Text.Trim().Equals(string.Empty) && !Status.Text.Trim().Equals(string.Empty) && !Priority.Text.Trim().Equals(string.Empty))
             {
                 TodoModelList.Add(new TodoModel() { Status = Status.Text, Priority = Priority.Text, Name = Name.Text, Description = Description.Text });
             }
@@ -81,28 +120,109 @@ namespace Laba7_8
             Priority.Text = "";
             ListView.Items.Refresh();
         }
-
-        private void Delete_click(object sender, RoutedEventArgs e)
+        private void DeleteCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-                if (ListView.SelectedItem != null)
+            if (ListView.SelectedItem != null)
+            {
+                MessageBoxResult del = MessageBox.Show("Delete this item?", "Delete?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+                if (del == MessageBoxResult.Yes)
                 {
-                    MessageBoxResult del = MessageBox.Show("Delete this item?", "Delete?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
-                    if (del == MessageBoxResult.Yes)
-                    {
-                        TodoModelList.Remove(ListView.SelectedItem as TodoModel);
-                    }
-                    ListView.Items.Refresh();
+                    TodoModelList.Remove(ListView.SelectedItem as TodoModel);
                 }
+                ListView.Items.Refresh();
             }
-
-        private void Edit_click(object sender, RoutedEventArgs e)
-        {
-                if (ListView.SelectedItem != null)
-                {
-                    EditWindow editWindow = new EditWindow(ListView.SelectedItem as TodoModel);
-                    editWindow.Owner = this;
-                    editWindow.ShowDialog();
-                }
         }
+        private void ReplaceCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (ListView.SelectedItem != null)
+            {
+                EditWindow editWindow = new EditWindow(ListView.SelectedItem as TodoModel, TodoModelList);
+                editWindow.Owner = this;
+                editWindow.ShowDialog();
+            }
+        }
+
+
+        private void Creation_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            if (IsSorted)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("CreationDate", ListSortDirection.Ascending));
+            }
+            else
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("CreationDate", ListSortDirection.Descending));
+            }
+            IsSorted = !IsSorted;
+        }
+
+        private void Priority_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            if (IsSorted)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Priority", ListSortDirection.Ascending));
+            }
+            else
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Priority", ListSortDirection.Descending));
+            }
+            IsSorted = !IsSorted;
+        }
+
+        private void Status_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            if (IsSorted)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Status", ListSortDirection.Ascending));
+            }
+            else
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Status", ListSortDirection.Descending));
+            }
+            IsSorted = !IsSorted;
+        }
+
+        private void Name_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            if (IsSorted)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            }
+            else
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+            }
+            IsSorted = !IsSorted;
+        }
+
+        private void Desc_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(ListView.ItemsSource);
+            if (IsSorted)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Description", ListSortDirection.Ascending));
+            }
+            else
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Description", ListSortDirection.Descending));
+            }
+            IsSorted = !IsSorted;
+        }
+
+
     }
 }

@@ -22,7 +22,6 @@ namespace Laba7_8
 {
     public partial class MainWindow : Window
     {
-        private BindingList<TodoModel> TodoList;
         public MainWindow()
         {
             InitializeComponent();
@@ -51,8 +50,6 @@ namespace Laba7_8
                 CultureInfo ci = i.Tag as CultureInfo;
                 i.IsChecked = ci != null && ci.Equals(currLang);
             }
-            //System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
-            //Application.Current.Shutdown();
         }
         private void Table_Click(object sender, RoutedEventArgs e)
         {

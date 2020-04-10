@@ -1,4 +1,5 @@
-﻿<Window Cursor="D:\Учеба\ООП\7,8 лаба\arrow.cur" x:Name="ListWindow" x:Class="Laba7_8.MainWindow"
+﻿<Window x:Name="ListWindow" x:Class="Laba7_8.MainWindow"
+        Cursor="D:\Учеба\ООП\7,8 лаба\arrow.cur" Icon="D:\Учеба\ООП\7,8 лаба\todo.ico"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

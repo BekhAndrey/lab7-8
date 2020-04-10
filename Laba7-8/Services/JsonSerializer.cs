@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -18,18 +19,18 @@ namespace Laba7_8.Services
         {
             Path = path;
         }
-        public BindingList<TodoModel> Deserialize()
+        public ObservableCollection<TodoModel> Deserialize()
         {
             var Exists = File.Exists(Path);
             if(!Exists)
             {
                 File.CreateText(Path).Dispose();
-                return new BindingList<TodoModel>();
+                return new ObservableCollection<TodoModel>();
             }
             using(var reader = File.OpenText(Path))
             {
                 var text = reader.ReadToEnd();
-                return JsonConvert.DeserializeObject<BindingList<TodoModel>>(text);
+                return JsonConvert.DeserializeObject<ObservableCollection<TodoModel>>(text);
             }
         }
         public void Serialize(object TodoDataList)
